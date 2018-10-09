@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Step 09: Stadtbezirks-Einwohnerzahlen als Diagramm</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<style>
+      .line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 2px;
+      }
+	  .circle {
+        fill: steelblue;
+	  }
+	</style>
+  </head>
+  <body>
+    <p>
+      <ul>
+        <li><a href="https://opendata.leipzig.de/dataset/einwohner-jahreszahlen">Leipzig Einwohner-Jahreszahlen</a></li>
+        <li><a href="https://d3js.org/">Data Driven Documents (D3.js)</a></li>
+        <li><a href="https://bl.ocks.org/d3noob/402dd382a51a4f6eea487f9a35566de0">Einfaches Liniendiagramm</a>,
+            <a href="http://bl.ocks.org/d3noob/38744a17f9c0141bcd04">mit Punkten</a>,
+            <a href="http://bl.ocks.org/romsson/f205420d21ced66810058d4cdf25c6dd">mit Tooltip</a></li>
+	 </ul>
+    </p>
+    <p>
+	  <h4>Entwicklung der Einwohneranzahl für Leipzig Zentrum-Süd von 2000 bis 2017</h4>	
+      <div id="Diagramm"></div>
+    </p>
+    <script>
+		var abstaende = {
+			links: 110,
+			oben: 10,
+			rechts: 200,
+			unten: 50
+		};
+		var breite = 1000 - abstaende.links - abstaende.rechts;
+		var hoehe = 340 - abstaende.oben - abstaende.unten;
+
+		var jahrEinlesen = d3.timeParse("%Y");
+
+		var jahrSkalierung = d3.scaleTime().range([0, breite]);
+		var einwohnerSkalierung = d3.scaleLinear().range([hoehe, 0]);
+
+		var jahrAchse = d3.axisBottom(jahrSkalierung);
+		var einwohnerAchse = d3.axisLeft(einwohnerSkalierung);
+
+		var einwohnerAnzahlUeberJahre = d3.line()
+			.x(function (d) {
+				return jahrSkalierung(d.jahr);
+			})
+			.y(function (d) {
+				return einwohnerSkalierung(d.wert);
+			});
+
+		var svg = d3.select("#Diagramm")
+			.append("svg")
+			.attr("width", breite + abstaende.links + abstaende.rechts)
+			.attr("height", hoehe + abstaende.oben + abstaende.unten)
+			.append("g")
+			.attr("transform", "translate(" + abstaende.links + "," + abstaende.oben + ")");
+
+		$.getJSON("einwohner.json", function (daten) {
+			var zentrumSuedDaten = daten.filter(function (datenSatz) {
+					return datenSatz.ortsteil == 'Zentrum-Süd'
+					 && datenSatz.name == 'Einwohner insgesamt';
+				});
+			zentrumSuedDaten = zentrumSuedDaten.map(function (datensatz) {
+					return {
+						"jahr": jahrEinlesen(datensatz.jahr),
+						"wert": datensatz.wert
+					};
+				});
+
+			jahrSkalierung.domain(d3.extent(zentrumSuedDaten, function (d) {
+					return d.jahr;
+				}));
+			var minEinwohner = d3.min(zentrumSuedDaten, function (d) {
+					return parseInt(d.wert);
+				});
+			var maxEinwohner = d3.max(zentrumSuedDaten, function (d) {
+					return parseInt(d.wert);
+				});
+			einwohnerSkalierung.domain([minEinwohner - 1000, maxEinwohner]);
+
+			svg.append("g")
+			.call(einwohnerAchse);
+			svg.append("g")
+			.attr("transform", "translate(0," + hoehe + ")")
+			.call(jahrAchse);
+			svg.append("path")
+			.data([zentrumSuedDaten])
+			.attr("class", "line")
+			.attr("d", einwohnerAnzahlUeberJahre);
+			svg.selectAll("dot")
+			.data(zentrumSuedDaten)
+			.enter()
+			.append("circle")
+			.attr("class", "circle")
+			.attr("r", 3.5)
+			.attr("cx", function (d) {
+				return jahrSkalierung(d.jahr);
+			})
+			.attr("cy", function (d) {
+				return einwohnerSkalierung(d.wert);
+			})
+			.on("mouseover", function (d) {
+				d3.select(this)
+				.style("fill", "red");
+				svg.selectAll("#tooltip").data([d])
+				.enter()
+				.append("text")
+				.attr("id", "tooltip")
+				.text(function (d, i) {
+					return d.jahr.getFullYear() + ": " + d.wert + " Einwohner";
+				})
+				.attr("y", function (d) {
+					return einwohnerSkalierung(d.wert) + 20
+				})
+				.attr("x", function (d) {
+					return jahrSkalierung(d.jahr) + 15;
+				})
+			})
+			.on("mouseout", function (d) {
+				d3.select(this)
+				.style("fill", "steelblue");
+				svg.selectAll("#tooltip").remove();
+				svg.selectAll("#tooltip_path").remove();
+			});
+		});
+     </script>
+  </body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Step 11: Leaflet Stadtbezirks-Einwohnerzahlen Coroplethenkarte</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+       integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+       crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+       integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+       crossorigin=""></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<style>
+		#KarteMitPunkt { height: 480px; }
+	    .info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }			
+		.legend { text-align: left; line-height: 18px; color: #555; } 
+		.legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }		
+	</style>
+  </head>
+  <body>
+	<div style="float: right">
+		<div style="float: left">Jahrauswahl = </div>
+		<div style="float: left; margin-left: 4px;" id="ausgewaehltesJahr">2017</div>
+		<div style="float: left">: </div>
+		<div style="float: left"><input type="range" min="2000" max="2017" value="2017" id="jahrAuswahl"
+		onchange="reagiereAufJahrAuswahl()"></div>
+	</div>	
+    <p>
+      <ul>
+        <li><a href="https://opendata.leipzig.de/dataset/einwohner-jahreszahlen">Leipzig Einwohner-Jahreszahlen</a></li>
+        <li><a href="https://de.wikipedia.org/wiki/Liste_der_Stadtbezirke_und_Ortsteile_Leipzigs">Ortsteildaten von Wikipedia</a>, 
+		<a href="https://statistik.leipzig.de/statdist/map.aspx?cat=1&rub=1&item=1">Gebietsfläche und Flächennutzung: Gesamtfläche</a></li>
+	 </ul>
+    </p>
+    <p>
+      <div id="KarteMitPunkt" />
+    </p>
+    <script>
+		$.ajaxSetup({
+			scriptCharset: "utf-8",
+			contentType: "application/json; charset=utf-8"
+		});
+
+		// Karte mit Mittelpunkt Leipzig erzeugen
+		var laengenGrad = 12.3742236;
+		var breitenGrad = 51.3399028;
+		var kartenMittelpunktKoordinaten = [breitenGrad, laengenGrad];
+		var zoomStufe = 11;
+		var karte = L.map('KarteMitPunkt').setView(kartenMittelpunktKoordinaten, zoomStufe);
+		// Hintergrundkarte setzen
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(karte);
+
+		var legende = undefined;
+		var geojsonEbene = undefined;
+
+		var ausgewaehltesJahr = 2017;
+
+		var reagiereAufJahrAuswahl = function () {
+			ausgewaehltesJahr = parseInt(document.getElementById("jahrAuswahl").value);
+			document.getElementById("ausgewaehltesJahr").innerHTML = ausgewaehltesJahr;
+			if (geojsonEbene && karte && legende) {
+				karte.removeControl(legende);
+				karte.removeLayer(geojsonEbene);
+			}
+			initialisiereKarte();
+		};
+		document.getElementById("jahrAuswahl").value = ausgewaehltesJahr;
+		document.getElementById("ausgewaehltesJahr").innerHTML = ausgewaehltesJahr;
+		var initialisiereKarte = function () {
+			//$.getJSON("https://statistik.leipzig.de/opendata/api/kdvalues?kategorie_nr=2&rubrik_nr=1&periode=y&format=json&callback=?",
+			$.getJSON("einwohner.json", function (einwohnerDaten) {
+
+				var wertFuerOrtsteilUndJahr = function (ortsteilName, jahr) {
+					return einwohnerDaten.find(function (datenSatz) {
+						return datenSatz.ortsteil == ortsteilName
+						 && datenSatz.name == 'Einwohner insgesamt'
+						 && datenSatz.jahr == jahr;
+					}).wert;
+				}
+
+				var ebenenStil = function (feature) {
+					return {
+						fillColor: stufenFarbe(wertFuerOrtsteilUndJahr(feature.properties.Name, ausgewaehltesJahr)),
+						weight: 2,
+						opacity: 1,
+						color: 'white',
+						fillOpacity: 1
+					};
+				}
+
+				// Bezirk-Polygone setzen
+				$.getJSON("ortsteile.json", function (data) {
+					geojsonEbene = L.geoJson(data, {
+							style: ebenenStil
+						});
+					karte.addLayer(geojsonEbene);
+
+					var polygonMittelpunkt = function (arr) {
+						var arrToUse;
+						if (arr.length == 1) {
+							arrToUse = arr[0];
+						} else {
+							arrToUse = arr;
+						}
+						return arrToUse.reduce(function (x, y) {
+							return [x[0] + y[0] / arrToUse.length, x[1] + y[1] / arrToUse.length]
+						}, [0, 0])
+					};
+
+					var geojsonEbenenHover;
+					geojsonEbene.on('mouseover', function (ereignis) {
+						var koordinaten = ereignis.layer.feature.geometry.coordinates;
+						var centroid = polygonMittelpunkt(koordinaten[0])
+							var hoverKoordinaten = [centroid[1], centroid[0]];
+						if (karte) {
+							var eigenschaften = ereignis.layer.feature.properties
+								var ortsteilName = eigenschaften.Name
+								var einwohnerAnzahl = wertFuerOrtsteilUndJahr(ortsteilName, ausgewaehltesJahr);
+							var inhalt = "<h3>" + ortsteilName + "</h3>Einwohner " + ausgewaehltesJahr + ": " + einwohnerAnzahl;
+							geojsonEbenenHover = L.popup()
+								.setLatLng(hoverKoordinaten)
+								.setContent(inhalt)
+								.openOn(karte);
+						}
+					});
+					geojsonEbene.on('mouseout', function (ereignis) {
+						if (geojsonEbenenHover && karte) {
+							karte.closePopup(geojsonEbenenHover);
+							geojsonEbenenHover = null;
+						}
+					});
+				});
+
+				legende = L.control({
+						position: 'bottomright'
+					});
+				var stufen = [0, 1000, 2500, 5000, 10000, 15000, 20000, 25000];
+				var stufenFarbe = function (wert) {
+					return wert > 25000 ? '#800026' :
+					wert > 20000 ? '#BD0026' :
+					wert > 15000 ? '#E31A1C' :
+					wert > 10000 ? '#FC4E2A' :
+					wert > 5000 ? '#FD8D3C' :
+					wert > 2500 ? '#FEB24C' :
+					wert > 1000 ? '#FED976' :
+					'#FFEDA0';
+				};
+				var registriereLegende = function () {
+					legende.onAdd = function (karte) {
+
+						var div = L.DomUtil.create('div', 'info legend');
+						var bezeichner = [];
+						var von, bis;
+
+						for (var index = 0; index < stufen.length; index++) {
+							von = stufen[index];
+							bis = stufen[index + 1];
+							bezeichner.push(
+								'<i style="background:' + stufenFarbe(von + 1) + '"></i> ' +
+								von + (bis ? '&ndash;' + bis : '+'));
+						}
+
+						div.innerHTML = 'Einwohneranzahl ' + ausgewaehltesJahr + ' <br /<br />' + bezeichner.join('<br>');
+						return div;
+					};
+
+					legende.addTo(karte);
+				};
+				registriereLegende();
+			});
+		};
+		initialisiereKarte();
+     </script>
+  </body>
+</html>

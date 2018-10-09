@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Step 06: Leaflet Point Marker from GeoJSON</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+       integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+       crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+       integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+       crossorigin=""></script>
+	<style>
+		#KarteMitPunkt { height: 480px; }
+	</style>
+  </head>
+  <body>
+    <p>
+      <ul>
+        <li><a href="https://leafletjs.com/examples/geojson/">Leaflet mit GeoJSON</a></li>
+        <li><a href="https://gis.stackexchange.com/a/111465">Leaflet Tooltips für GeoJSON</a></li>
+        <li><a href="https://nominatim.openstreetmap.org/">OpenStreetMap Nominatim</a></li>
+      </ul>
+    </p>
+    <p>
+      <div id="KarteMitPunkt" />
+    </p>
+    <script>
+      // Karte mit Mittelpunkt Leipzig erzeugen
+      var laengenGrad = 12.3742236;
+      var breitenGrad = 51.3399028;
+      var kartenMittelpunktKoordinaten = [ breitenGrad, laengenGrad ];
+      var zoomStufe = 14;
+      var karte = L.map('KarteMitPunkt').setView(kartenMittelpunktKoordinaten, zoomStufe);
+      // Hintergrundkarte setzen
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(karte);
+	  
+	  // https://nominatim.openstreetmap.org
+	  // Suchen nach Lützner Str. 85, 04177 Leipzig
+	  // auf Details klicken
+	  var geoJsonDaten = {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+			  "name": "Basislager Co-Working Space"
+			},
+            "geometry": {
+               "type": "Point",
+               "coordinates": [
+		         12.3734686781157,
+                 51.3320818 
+               ]
+            }
+         },
+         {
+            "type": "Feature",
+            "properties": {
+			  "name": "KF Education"
+			},
+            "geometry": {
+               "type": "Point",
+               "coordinates": [
+		         12.326116,
+                 51.3340609 
+               ]
+            }
+          }
+        ]
+      };
+	  
+      // Punkt-Marker setzen
+      var geojsonEbene = L.geoJson(geoJsonDaten);
+	  karte.addLayer(geojsonEbene);
+	  
+	  var hoverZuMarkerAbstand = function(aktuelleZoomStufe) {
+		return 0.39 / Math.pow(2, aktuelleZoomStufe - 6);
+	  };
+	  var geojsonEbenenHover;
+      geojsonEbene.on('mouseover', function(ereignis) {
+        var koordinaten = ereignis.layer.feature.geometry.coordinates;
+		var hoverKoordinaten = [koordinaten[1] + hoverZuMarkerAbstand(karte.getZoom()), koordinaten[0]];
+		if (karte) {
+		  var eigenschaften = ereignis.layer.feature.properties
+		  geojsonEbenenHover = L.popup()
+		      .setLatLng(hoverKoordinaten)
+			  .setContent(eigenschaften.name)
+			  .openOn(karte);
+		}
+      });
+	  geojsonEbene.on('mouseout', function (ereignis) {
+        if (geojsonEbenenHover && karte) {
+	      karte.closePopup(geojsonEbenenHover);
+		  geojsonEbenenHover = null;
+	    }
+	  });
+     </script>
+  </body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Step 10: Leaflet Interaktive Stadtbezirks-Einwohnerzahlen-Auswahl</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+       integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+       crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+       integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+       crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<style>
+	  #KarteMitPunkt { height: 480px; }
+	  .info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }			
+      .line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 2px;
+      }
+	  .circle {
+        fill: steelblue;
+	  }		
+	</style>
+  </head>
+  <body>
+    <p>
+      <ul>
+        <li><a href="https://opendata.leipzig.de/dataset/einwohner-jahreszahlen">Leipzig Einwohner-Jahreszahlen</a></li>
+        <li><a href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Array">Javascript Array Methoden</a></li>
+	 </ul>
+    </p>
+    <p>
+      <div id="KarteMitPunkt" />
+    </p>
+    <script>
+		// Karte mit Mittelpunkt Leipzig erzeugen
+		var laengenGrad = 12.6242236;
+		var breitenGrad = 51.3399028;
+		var kartenMittelpunktKoordinaten = [breitenGrad, laengenGrad];
+		var zoomStufe = 11;
+		var karte = L.map('KarteMitPunkt', {
+				zoomControl: false
+			}).setView(kartenMittelpunktKoordinaten, zoomStufe);
+		karte.touchZoom.disable();
+		karte.doubleClickZoom.disable();
+		karte.scrollWheelZoom.disable();
+		karte.boxZoom.disable();
+		karte.keyboard.disable();
+
+		// Hintergrundkarte setzen
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(karte);
+
+		$.ajaxSetup({
+			scriptCharset: "utf-8",
+			contentType: "application/json; charset=utf-8"
+		});
+
+		var geojsonEbene = undefined;
+		var gemerkterZuletztGewaehlterOrtsteil = 'alle';
+		var auswahlAenderung = true;
+		var festerWertebereich = true;
+
+		var ebenenStil = function (feature) {
+			var fillOpacityToUse = 0.3;
+			var aktuellGewaehlerOrtsteil = gewaehlterOrtsteil()
+				if (feature.properties.Name == aktuellGewaehlerOrtsteil) {
+					fillOpacityToUse = 1.0;
+				}
+				return {
+				fillColor: 'red',
+				weight: 2,
+				opacity: 0.5,
+				color: 'white',
+				fillOpacity: fillOpacityToUse
+			};
+		}
+
+		var reagiereAufOrtsteilAuswahl = function () {
+			var auswahlBox = document.getElementById("ortsteilAuswahl");
+			if (auswahlBox && auswahlBox.selectedIndex != -1) {
+				var gewaehlterOrtsteilIndex = auswahlBox.options[auswahlBox.selectedIndex].value;
+				var gewaehlterOrtsteilName = auswahlBox.options[auswahlBox.selectedIndex].text;
+				gemerkterZuletztGewaehlterOrtsteil = gewaehlterOrtsteilName;
+				if (gemerkterZuletztGewaehlterOrtsteil != "") {
+					karte.removeLayer(geojsonEbene);
+					auswahlAenderung = true;
+					initialisiereGeoJsonEbene();
+				}
+			}
+		};
+
+		var reagiereAufWertebereichAuswahl = function () {
+			festerWertebereich = !festerWertebereich;
+			karte.removeLayer(geojsonEbene);
+			auswahlAenderung = true;
+			initialisiereGeoJsonEbene();
+		};
+
+		var alleOrtsteilNamen = [];
+
+		var infoTafel = L.control();
+
+		infoTafel.onAdd = function (karte) {
+			this._div = L.DomUtil.create('div', 'info');
+			this.update();
+			return this._div;
+		};
+
+		var setzeOrtsteilInAuswahlBox = function () {
+			var auswahlBox = document.getElementById('ortsteilAuswahl');
+			if (auswahlBox) {
+				for (var option, index = 0; option = auswahlBox.options[index]; index++) {
+					if (option.value == gemerkterZuletztGewaehlterOrtsteil) {
+						auswahlBox.selectedIndex = index;
+						break;
+					}
+				}
+			}
+		};
+		var alterHtmlCode = '';
+		var ortsteilAuswahlBox = function () {
+			var htmlCode = '<select id="ortsteilAuswahl" onchange="reagiereAufOrtsteilAuswahl()">';
+			for (var index in alleOrtsteilNamen) {
+				var bezeichner = alleOrtsteilNamen[index];
+				if (bezeichner) {
+					htmlCode += '<option>' + bezeichner + '</option>';
+				}
+			}
+			htmlCode += '</select>';
+			alterHtmlCode = htmlCode;
+			return htmlCode;
+		};
+		var gewaehlterOrtsteil = function () {
+			var auswahlBox = document.getElementById("ortsteilAuswahl");
+			if (auswahlBox && auswahlBox.selectedIndex != -1) {
+				var option = auswahlBox.options[auswahlBox.selectedIndex];
+				if (option) {
+					return option.text;
+				} else {
+					''
+				}
+			} else {
+				''
+			}
+		};
+
+		infoTafel.update = function () {
+			var htmlCode = '<div style="width: 650px;height: 400px;"><h4>Einwohner-Jahreszahlen ';
+			htmlCode += ortsteilAuswahlBox();
+			htmlCode += '<input type="checkbox" id="werteBereichVerhalten" onchange="reagiereAufWertebereichAuswahl()">Fester Wertebereich</input>';
+			htmlCode += '</h4>';
+			htmlCode += '<div id="Diagramm"></div>'
+			htmlCode += '</div>';
+			this._div.innerHTML = htmlCode;
+		};
+
+		infoTafel.addTo(karte);
+
+		function hebeAuswahlHervor(ereignis, ortsteilName, einwohnerDaten) {
+			if (ereignis) {
+				var ebene = ereignis.target;
+				if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+					ebene.bringToFront();
+				}
+			}
+
+			infoTafel.update();
+			document.getElementById("werteBereichVerhalten").checked = festerWertebereich;
+			gemerkterZuletztGewaehlterOrtsteil = ortsteilName;
+			karte.removeLayer(geojsonEbene);
+			initialisiereGeoJsonEbene();
+			setzeOrtsteilInAuswahlBox();
+			var ortsteilDaten = einwohnerDaten
+				.filter(function (datenSatz) {
+					return (datenSatz.ortsteil == ortsteilName
+						 || (datenSatz.stadtbezirk == null && datenSatz.ortsteil == null
+							 && ortsteilName == 'alle'))
+					 && datenSatz.name == 'Einwohner insgesamt';
+				})
+				.map(function (datenSatz) {
+					return {
+						"jahr": datenSatz.jahr,
+						"wert": datenSatz.wert
+					};
+				});
+
+			erstelleDiagramm(ortsteilDaten);
+		}
+
+		function setzeAuswahlZurueck(ereignis) {
+			infoTafel.update();
+			gemerkterZuletztGewaehlterOrtsteil = 'alle';
+			karte.removeLayer(geojsonEbene);
+			initialisiereGeoJsonEbene();
+			setzeOrtsteilInAuswahlBox();
+		}
+
+		var initialisiereGeoJsonEbene = function () {
+
+			// Bezirk-Polygone setzen
+			$.getJSON("ortsteile.json", function (data) {
+
+				geojsonEbene = L.geoJson(data, {
+						style: ebenenStil
+					});
+				karte.addLayer(geojsonEbene);
+
+				var polygonMittelpunkt = function (arr) {
+					var arrToUse;
+					if (arr.length == 1) {
+						arrToUse = arr[0];
+					} else {
+						arrToUse = arr;
+					}
+					return arrToUse.reduce(function (x, y) {
+						return [x[0] + y[0] / arrToUse.length, x[1] + y[1] / arrToUse.length]
+					}, [0, 0])
+				};
+				//$.getJSON("https://statistik.leipzig.de/opendata/api/kdvalues?kategorie_nr=2&rubrik_nr=1&periode=y&format=json&callback=?",
+				$.getJSON("einwohner.json",
+					function (einwohnerDaten) {
+					if (alleOrtsteilNamen.length == 0) {
+						alleOrtsteilNamen = ["alle"];
+						einwohnerDaten
+						.filter(function (datenSatz) {
+							return datenSatz.name == 'Einwohner insgesamt'
+							 && datenSatz.jahr == 2017;
+						})
+						.forEach(function (datenSatz) {
+							if (datenSatz.ortsteil != null) {
+								alleOrtsteilNamen.push(datenSatz.ortsteil);
+							}
+						});
+						alleOrtsteilNamen = alleOrtsteilNamen.sort();
+						infoTafel.update();
+						gemerkterZuletztGewaehlterOrtsteil = 'alle';
+						setzeOrtsteilInAuswahlBox();
+					}
+					geojsonEbene.on('click', function (ereignis) {
+						if (karte) {
+							var eigenschaften = ereignis.layer.feature.properties
+								var ortsteilName = eigenschaften.Name
+								if (gemerkterZuletztGewaehlterOrtsteil == ortsteilName) {
+									hebeAuswahlHervor(ereignis, 'alle', einwohnerDaten);
+								} else {
+									hebeAuswahlHervor(ereignis, ortsteilName, einwohnerDaten);
+								}
+						}
+					});
+					if (auswahlAenderung) {
+						hebeAuswahlHervor(undefined, gemerkterZuletztGewaehlterOrtsteil, einwohnerDaten);
+						auswahlAenderung = false;
+					}
+
+				});
+			});
+		};
+		initialisiereGeoJsonEbene();
+		var erstelleDiagramm = function (ortsteilDaten) {
+			var abstaende = {
+				links: 50,
+				oben: 10,
+				rechts: 200,
+				unten: 50
+			};
+			var breite = 700 - abstaende.links - abstaende.rechts;
+			var hoehe = 380 - abstaende.oben - abstaende.unten;
+
+			var jahrEinlesen = d3.timeParse("%Y");
+
+			var jahrSkalierung = d3.scaleTime().range([0, breite]);
+			var einwohnerSkalierung = d3.scaleLinear().range([hoehe, 0]);
+
+			var jahrAchse = d3.axisBottom(jahrSkalierung);
+			var einwohnerAchse = d3.axisLeft(einwohnerSkalierung);
+
+			var einwohnerAnzahlUeberJahre = d3.line()
+				.x(function (d) {
+					return jahrSkalierung(d.jahr);
+				})
+				.y(function (d) {
+					return einwohnerSkalierung(d.wert);
+				});
+
+			var svg = d3.select("#Diagramm")
+				.append("svg")
+				.attr("width", breite + abstaende.links + abstaende.rechts)
+				.attr("height", hoehe + abstaende.oben + abstaende.unten)
+				.append("g")
+				.attr("transform", "translate(" + abstaende.links + "," + abstaende.oben + ")");
+
+			ortsteilDaten = ortsteilDaten.map(function (datensatz) {
+					return {
+						"jahr": jahrEinlesen(datensatz.jahr),
+						"wert": datensatz.wert
+					};
+				});
+
+			jahrSkalierung.domain(d3.extent(ortsteilDaten, function (d) {
+					return d.jahr;
+				}));
+			var minEinwohner = d3.min(ortsteilDaten, function (d) {
+					return parseInt(d.wert);
+				});
+			if (minEinwohner > 20000 || !festerWertebereich) {
+				var maxEinwohner = d3.max(ortsteilDaten, function (d) {
+						return parseInt(d.wert);
+					});
+				var luftNachUnten = parseInt((maxEinwohner - minEinwohner) / 10);
+			} else {
+				minEinwohner = 1000;
+				var maxEinwohner = 27000;
+				var luftNachUnten = 200;
+			}
+			einwohnerSkalierung.domain([minEinwohner - luftNachUnten, maxEinwohner]);
+
+			svg.append("g")
+			.call(einwohnerAchse);
+			svg.append("g")
+			.attr("transform", "translate(0," + hoehe + ")")
+			.call(jahrAchse);
+			svg.append("path")
+			.data([ortsteilDaten])
+			.attr("class", "line")
+			.attr("d", einwohnerAnzahlUeberJahre);
+			svg.selectAll("dot")
+			.data(ortsteilDaten)
+			.enter()
+			.append("circle")
+			.attr("class", "circle")
+			.attr("r", 3.5)
+			.attr("cx", function (d) {
+				return jahrSkalierung(d.jahr);
+			})
+			.attr("cy", function (d) {
+				return einwohnerSkalierung(d.wert);
+			})
+			.on("mouseover", function (d) {
+				d3.select(this)
+				.style("fill", "red");
+				svg.selectAll("#tooltip").data([d])
+				.enter()
+				.append("text")
+				.attr("id", "tooltip")
+				.text(function (d, i) {
+					return d.jahr.getFullYear() + ": " + d.wert + " Einwohner";
+				})
+				.attr("y", function (d) {
+					return einwohnerSkalierung(d.wert) + 20
+				})
+				.attr("x", function (d) {
+					return jahrSkalierung(d.jahr) + 15;
+				})
+			})
+			.on("mouseout", function (d) {
+				d3.select(this)
+				.style("fill", "steelblue");
+				svg.selectAll("#tooltip").remove();
+				svg.selectAll("#tooltip_path").remove();
+			});
+		};
+     </script>
+  </body>
+</html>
