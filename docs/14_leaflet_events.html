@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Step 14: Leaflet filter marker by time range</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+    integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+    crossorigin="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.min.css">
+  <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+    integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+    crossorigin=""></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+  <style>
+    #KarteMitPunkt {
+      height: 480px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class='col-sm-12'>
+        <ul>
+          <li><a href="https://leafletjs.com/examples/geojson/">Leaflet mit GeoJSON</a></li>
+          <li><a href="https://gis.stackexchange.com/a/111465">Leaflet Tooltips für GeoJSON</a></li>
+          <li><a href="https://nominatim.openstreetmap.org/">OpenStreetMap Nominatim</a></li>
+          <li><a href="https://github.com/socib/Leaflet.TimeDimension">Leaflet TimeDimension</a></li>
+          <li><a href="https://github.com/socib/Leaflet.TimeDimension#ltimedimensionlayergeojson">Leaflet TimeDimension
+              GeoJSON</a></li>
+          <li><a href="https://eonasdan.github.io/bootstrap-datetimepicker/">Bootstrap Datepicker</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="row">
+      <div class='col-sm-6'>
+        <div class="form-group">
+          <div class='input-group date' id='startdatumsauswahl'>
+            <input type='text' class="form-control" />
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class='col-sm-6'>
+        <div class="form-group">
+          <div class='input-group date' id='enddatumsauswahl'>
+            <input type='text' class="form-control" />
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class='col-sm-12' id="KarteMitPunkt" />
+    </div>
+  </div>
+  <script>
+    // Karte mit Mittelpunkt Leipzig erzeugen
+    var laengenGrad = 12.3742236;
+    var breitenGrad = 51.3399028;
+    var kartenMittelpunktKoordinaten = [breitenGrad, laengenGrad];
+    var zoomStufe = 14;
+    var minDate = moment();
+    var maxDate = moment();
+    maxDate.add('1', 'days');
+
+    var karte = L.map('KarteMitPunkt').setView(kartenMittelpunktKoordinaten, zoomStufe);
+    // Hintergrundkarte setzen
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(karte);
+
+    var geoJsonDaten = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "name2": "Basislager Co-Working Space",
+            "coordTimes": "2019-06-10T08:00:00.000Z"
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              12.3734686781157,
+              51.3320818
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "name2": "KF Education",
+            "coordTimes": "2019-06-09T08:00:00.000Z"
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              12.326116,
+              51.3340609
+            ]
+          }
+        }
+      ]
+    };
+
+    var optionen = {
+      filter: function (feature, layer) {
+        return moment(feature.properties.coordTimes).isBetween(minDate, maxDate);
+      }
+    }
+    // Punkt-Marker setzen    
+    var geojsonEbene = L.geoJson(geoJsonDaten, optionen);
+    var schichtenGruppe = L.layerGroup([]);
+    schichtenGruppe.addLayer(geojsonEbene);
+    schichtenGruppe.addTo(karte);
+
+    var hoverZuMarkerAbstand = function (aktuelleZoomStufe) {
+      return 0.39 / Math.pow(2, aktuelleZoomStufe - 6);
+    };
+    var geojsonEbenenHover;
+    geojsonEbene.on('mouseover', function (ereignis) {
+      var koordinaten = ereignis.layer.feature.geometry.coordinates;
+      var hoverKoordinaten = [koordinaten[1] + hoverZuMarkerAbstand(karte.getZoom()), koordinaten[0]];
+      if (karte) {
+        var eigenschaften = ereignis.layer.feature.properties
+        geojsonEbenenHover = L.popup()
+          .setLatLng(hoverKoordinaten)
+          .setContent(eigenschaften.name2)
+          .openOn(karte);
+      }
+    });
+    geojsonEbene.on('mouseout', function (ereignis) {
+      if (geojsonEbenenHover && karte) {
+        karte.closePopup(geojsonEbenenHover);
+        geojsonEbenenHover = null;
+      }
+    });
+
+    var schichtNeuLaden = function () {
+      schichtenGruppe.clearLayers();
+      karte.removeLayer(schichtenGruppe);
+      var geojsonEbene = L.geoJson(geoJsonDaten, optionen);
+      schichtenGruppe.addLayer(geojsonEbene);
+      schichtenGruppe.addTo(karte);
+    };
+
+    $(function () {
+      $('#startdatumsauswahl').datetimepicker({
+        defaultDate: minDate,
+      });
+      $('#enddatumsauswahl').datetimepicker({
+        defaultDate: maxDate,
+        useCurrent: false
+      });
+      $("#startdatumsauswahl").on("dp.change", function (e) {
+        minDate = moment(e.date)
+        $('#enddatumsauswahl').data("DateTimePicker").minDate(e.date);
+        schichtNeuLaden();
+      });
+      $("#enddatumsauswahl").on("dp.change", function (e) {
+        maxDate = moment(e.date)
+        $('#startdatumsauswahl').data("DateTimePicker").maxDate(e.date);
+        schichtNeuLaden();
+      });
+    });
+  </script>
+</body>
+
+</html>
