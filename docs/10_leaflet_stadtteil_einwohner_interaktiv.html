@@ -228,7 +228,7 @@
 						einwohnerDaten
 						.filter(function (datenSatz) {
 							return datenSatz.name == 'Einwohner insgesamt'
-							 && datenSatz.jahr == 2017;
+							 && datenSatz.jahr == 2018;
 						})
 						.forEach(function (datenSatz) {
 							if (datenSatz.ortsteil != null) {
@@ -267,7 +267,7 @@
 				rechts: 200,
 				unten: 50
 			};
-			var breite = 700 - abstaende.links - abstaende.rechts;
+			var breite = 680 - abstaende.links - abstaende.rechts;
 			var hoehe = 380 - abstaende.oben - abstaende.unten;
 
 			var jahrEinlesen = d3.timeParse("%Y");

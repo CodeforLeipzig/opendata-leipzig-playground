@@ -67,12 +67,12 @@
 					if (karte) {
 						var eigenschaften = ereignis.layer.feature.properties
 							var ortsteilName = eigenschaften.Name
-							var einwohnerAnzahl2017 = einwohnerDaten.find(function (datenSatz) {
+							var einwohnerAnzahl2018 = einwohnerDaten.find(function (datenSatz) {
 								return datenSatz.ortsteil == ortsteilName
 								 && datenSatz.name == 'Einwohner insgesamt'
-								 && datenSatz.jahr == 2017;
+								 && datenSatz.jahr == 2018;
 							}).wert;
-						var inhalt = "<h3>" + ortsteilName + "</h3>Einwohner 2017: " + einwohnerAnzahl2017;
+						var inhalt = "<h3>" + ortsteilName + "</h3>Einwohner 2018: " + einwohnerAnzahl2018;
 						geojsonEbenenHover = L.popup()
 							.setLatLng(hoverKoordinaten)
 							.setContent(inhalt)
