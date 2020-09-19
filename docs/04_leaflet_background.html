@@ -3,12 +3,12 @@
   <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Step 04: Leaflet Background</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
-       integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
-       crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
-       integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
-       crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-providers/1.4.0/leaflet-providers.min.js"></script>
 	<style>
 		#KarteMitPunkt { height: 480px; }
@@ -39,7 +39,7 @@
 	  //L.tileLayer.provider('Wikimedia').addTo(karte);
 	  //L.tileLayer.provider('Esri.DeLorme').addTo(karte);
 	  //L.tileLayer.provider('Esri.WorldImagery').addTo(karte);
-	  L.tileLayer.provider('CartoDB.Voyager').addTo(karte);
+	  //L.tileLayer.provider('CartoDB.Voyage	  L.tileLayer.provider('CartoDB.Voyager').addTo(karte);
 	  //L.tileLayer.provider('CartoDB.DarkMatter').addTo(karte);
 	  //L.tileLayer.provider('Stamen.Toner').addTo(karte);
 	  //L.tileLayer.provider('Hydda.RoadsAndLabels').addTo(karte);
@@ -55,9 +55,7 @@
 		attribution: '<a href="https://de.wikipedia.org/w/index.php?title=Datei:Leipzig_1897.jpg">Wikipedia</a>'
 	  });
 	  //karte.addLayer(hintergrund);
-	  
-      // Punkt-Marker setzen
-      var punktKoordinaten = [ 51.3320818, 12.3734686781157 ];
+en = [ 51.3320818, 12.3734686781157 ];
       var punkt = L.marker(punktKoordinaten).addTo(karte);
      </script>
   </body>

@@ -129,7 +129,7 @@
         return moment(feature.properties.coordTimes).isBetween(minDate, maxDate);
       }
     }
-    // Punkt-Marker setzen    
+    // Punkt-Marker setzen
     var geojsonEbene = L.geoJson(geoJsonDaten, optionen);
     var schichtenGruppe = L.layerGroup([]);
     schichtenGruppe.addLayer(geojsonEbene);
