@@ -70,12 +70,12 @@
 					if (karte) {
 						var eigenschaften = ereignis.layer.feature.properties
 							var ortsteilName = eigenschaften.Name
-							var einwohnerAnzahl2019 = Array.from(einwohner.daten).find(function (datenSatz) {
+							var einwohnerAnzahl2020 = Array.from(einwohner.daten).find(function (datenSatz) {
 								return datenSatz.ortsteil == ortsteilName
 								 && datenSatz.name == 'Einwohner insgesamt'
-								 && datenSatz.jahr == 2019;
+								 && datenSatz.jahr == 2020;
 							}).wert;
-						var inhalt = "<h3>" + ortsteilName + "</h3>Einwohner 2019: " + einwohnerAnzahl2019;
+						var inhalt = "<h3>" + ortsteilName + "</h3>Einwohner 2020: " + einwohnerAnzahl2020;
 						geojsonEbenenHover = L.popup()
 							.setLatLng(hoverKoordinaten)
 							.setContent(inhalt)
