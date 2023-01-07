@@ -25,9 +25,9 @@
   <body>
 	<div style="float: right">
 		<div style="float: left">Jahrauswahl = </div>
-		<div style="float: left; margin-left: 4px;" id="ausgewaehltesJahr">2020</div>
+		<div style="float: left; margin-left: 4px;" id="ausgewaehltesJahr">2022</div>
 		<div style="float: left">: </div>
-		<div style="float: left"><input type="range" min="2001" max="2020" value="2020" id="jahrAuswahl"
+		<div style="float: left"><input type="range" min="2001" max="2022" value="2022" id="jahrAuswahl"
 		onchange="reagiereAufJahrAuswahl()"></div>
 	</div>
     <p>
@@ -62,7 +62,7 @@
 		var legende = undefined;
 		var geojsonEbene = undefined;
 
-		var ausgewaehltesJahr = 2020;
+		var ausgewaehltesJahr = 2022;
 
 		var reagiereAufJahrAuswahl = function () {
 			ausgewaehltesJahr = parseInt(document.getElementById("jahrAuswahl").value);

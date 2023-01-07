@@ -1,0 +1,276 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>PumepnZine</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+	<style>
+		#KarteMitPunkt { height: 480px; }
+	</style>
+  </head>
+  <body>
+    <p>
+      <div id="KarteMitPunkt" />
+    </p>
+    <script>
+      // Karte mit Mittelpunkt Leipzig erzeugen
+      var laengenGrad = 12.3742236;
+      var breitenGrad = 51.3399028;
+      var kartenMittelpunktKoordinaten = [ breitenGrad, laengenGrad ];
+      var zoomStufe = 10;
+      var karte = L.map('KarteMitPunkt').setView(kartenMittelpunktKoordinaten, zoomStufe);
+      // Hintergrundkarte setzen
+      L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {
+				attribution: 'Map tiles by &copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/about/" target="_blank">OpenStreetMap contributors</a>',
+				minZoom: 0,
+				maxZoom: 20,
+				ext: 'png'
+			}).addTo(karte);	  
+	  var geoJsonDaten = {
+    "type": "FeatureCollection",
+    "features": [
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "264",
+            "district": "Südvorstadt",
+            "address": "Bernhard-Göring-Straße 104 (andere Straßenseite)",
+            "type": "Kleiner Löwe",
+            "state": "gelb"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.376775, 51.316723]
+        },
+        "id": "14"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "270",
+            "district": "Connewitz",
+            "address": "Bornaische Straße 3c",
+            "type": "Großer Löwe",
+            "state": "Lieblingspumpe"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.374656, 51.309456]
+        },
+        "id": "18"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "266",
+            "district": "Möckern",
+            "address": "Blücherstraße",
+            "type": "Kleiner Löwe",
+            "state": "Lieblingspumpe"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.348969, 51.368187]
+        },
+        "id": "16"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "235",
+            "district": "Lößnig",
+            "address": "Lobstädter Straße 9",
+            "type": "Vogelkäfig",
+            "state": "Lieblingspumpe"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.38863, 51.29841]
+        },
+        "id": "86"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "17",
+            "district": "Zentrum-Nordwest",
+            "address": "Waldstraße 48",
+            "type": "Gotik",
+            "state": "gelb"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.35732, 51.34554]
+        },
+        "id": "150"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "226",
+            "district": "Dölitz-Dösen",
+            "address": "Leinestraße",
+            "type": "Delphin",
+            "state": "Lieblingspumpe"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.41067, 51.28604]
+        },
+        "id": "82"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "57",
+            "district": "Zentrum-Ost",
+            "address": "Schützenstraße 8",
+            "type": "Gotik",
+            "state": "gelb"            
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.384303, 51.34243]
+        },
+        "id": "135"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "181",
+            "district": "Volkmarsdorf",
+            "address": "Mariannenstraße / Eastpark",
+            "type": "Delphin",
+            "state": "gelb"            
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.40906, 51.34675]
+        },
+        "id": "96"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "229",
+            "district": "Neustadt-Neuschönefeld",
+            "address": "Hedwigstraße 3",
+            "type": "unbekannt",
+            "state": "gelb"            
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.4032, 51.34583]
+        },
+        "id": "57"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "172",
+            "district": "Kleinzschocher",
+            "address": "Dieskaustraße",
+            "type": "Delphin",
+            "state": "In Arbeit"            
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.328836, 51.319324]
+        },
+        "id": "35"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "246",
+            "district": "Schönefeld-Ost",
+            "address": "Gorkistraße 27",
+            "type": "Vogelkäfig",
+            "state": "In Arbeit"            
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.41761, 51.3585]
+        },
+        "id": "52"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "234",
+            "district": "Gohlis-Süd",
+            "address": "Fritz-Seger-Straße",
+            "type": "Vogelkäfig",
+            "state": "In Arbeit"            
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.37124, 51.3586]
+        },
+        "id": "47"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "25",
+            "district": "Zentrum",
+            "address": "Magazingasse 1 (andere Straßenseite)",
+            "type": "Vogelkäfig",
+            "state": "In Arbeit"            
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.37649, 51.33728]
+        },
+        "id": "92"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "numberOfficial": "185",
+            "district": "Sellerhausen-Stünz",
+            "address": "Wurzner Straße",
+            "type": "Delphin",
+            "state": "Erfolg"            
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [12.42677, 51.34355]
+        },
+        "id": "158"
+    }]
+};
+	  
+      // Punkt-Marker setzen
+      var geojsonEbene = L.geoJson(geoJsonDaten);
+	  karte.addLayer(geojsonEbene);
+	  
+	  var hoverZuMarkerAbstand = function(aktuelleZoomStufe) {
+		return 0.39 / Math.pow(2, aktuelleZoomStufe - 6);
+	  };
+	  var geojsonEbenenHover;
+      geojsonEbene.on('mouseover', function(ereignis) {
+        var koordinaten = ereignis.layer.feature.geometry.coordinates;
+		var hoverKoordinaten = [koordinaten[1] + hoverZuMarkerAbstand(karte.getZoom()), koordinaten[0]];
+		if (karte) {
+		  var eigenschaften = ereignis.layer.feature.properties
+		  geojsonEbenenHover = L.popup()
+		      .setLatLng(hoverKoordinaten)
+			  .setContent(eigenschaften.state)
+			  .openOn(karte);
+		}
+      });
+	  geojsonEbene.on('mouseout', function (ereignis) {
+        if (geojsonEbenenHover && karte) {
+	      karte.closePopup(geojsonEbenenHover);
+		  geojsonEbenenHover = null;
+	    }
+	  });
+     </script>
+  </body>
+</html>
