@@ -30,7 +30,7 @@
 				minZoom: 0,
 				maxZoom: 20,
 				ext: 'png'
-			}).addTo(karte);	  
+			}).addTo(karte);
 	  var geoJsonDaten = {
     "type": "FeatureCollection",
     "features": [
@@ -131,7 +131,7 @@
             "district": "Zentrum-Ost",
             "address": "Schützenstraße 8",
             "type": "Gotik",
-            "state": "gelb"            
+            "state": "gelb"
         },
         "geometry": {
             "type": "Point",
@@ -146,7 +146,7 @@
             "district": "Volkmarsdorf",
             "address": "Mariannenstraße / Eastpark",
             "type": "Delphin",
-            "state": "gelb"            
+            "state": "gelb"
         },
         "geometry": {
             "type": "Point",
@@ -161,7 +161,7 @@
             "district": "Neustadt-Neuschönefeld",
             "address": "Hedwigstraße 3",
             "type": "unbekannt",
-            "state": "gelb"            
+            "state": "gelb"
         },
         "geometry": {
             "type": "Point",
@@ -176,7 +176,7 @@
             "district": "Kleinzschocher",
             "address": "Dieskaustraße",
             "type": "Delphin",
-            "state": "In Arbeit"            
+            "state": "In Arbeit"
         },
         "geometry": {
             "type": "Point",
@@ -191,7 +191,7 @@
             "district": "Schönefeld-Ost",
             "address": "Gorkistraße 27",
             "type": "Vogelkäfig",
-            "state": "In Arbeit"            
+            "state": "In Arbeit"
         },
         "geometry": {
             "type": "Point",
@@ -206,7 +206,7 @@
             "district": "Gohlis-Süd",
             "address": "Fritz-Seger-Straße",
             "type": "Vogelkäfig",
-            "state": "In Arbeit"            
+            "state": "In Arbeit"
         },
         "geometry": {
             "type": "Point",
@@ -221,7 +221,7 @@
             "district": "Zentrum",
             "address": "Magazingasse 1 (andere Straßenseite)",
             "type": "Vogelkäfig",
-            "state": "In Arbeit"            
+            "state": "In Arbeit"
         },
         "geometry": {
             "type": "Point",
@@ -236,7 +236,7 @@
             "district": "Sellerhausen-Stünz",
             "address": "Wurzner Straße",
             "type": "Delphin",
-            "state": "Erfolg"            
+            "state": "Erfolg"
         },
         "geometry": {
             "type": "Point",
@@ -245,32 +245,68 @@
         "id": "158"
     }]
 };
-	  
+
+    const defaultIconProps = {
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    };
+    // vorangig zur Inspektion
+    const lieblingspumpeSymbol = new L.Icon({
+        ...defaultIconProps,
+        // Quelle der Icons: https://github.com/pointhi/leaflet-color-markers
+        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+    });
+    // weitere Vorauswahl
+    var erweiterteListeSymbol = new L.Icon({
+        ...defaultIconProps,
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+    });
+    // in work
+    var inArbeitSymbol = new L.Icon({
+        ...defaultIconProps,
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+    });
+    // already done
+    var erfolgSymbol = new L.Icon({
+        ...defaultIconProps,
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    });
+     const featureStylingAnpassung = (feature, layer) => {
+        const lon = feature.geometry.coordinates[0];
+        const lat = feature.geometry.coordinates[1];
+        const { numberOfficial, address, type, district } = feature.properties
+        var marker;
+        switch(feature.properties.state) {
+            case "Erfolg":
+                marker = L.marker([lat, lon], {icon: erfolgSymbol}).addTo(karte);
+                break;
+            case "In Arbeit":
+                marker = L.marker([lat, lon], {icon: inArbeitSymbol}).addTo(karte);
+                break;
+            case "gelb":
+                marker = L.marker([lat, lon], {icon: erweiterteListeSymbol}).addTo(karte);
+                break;
+            case "Lieblingspumpe":
+                marker = L.marker([lat, lon], {icon: lieblingspumpeSymbol}).addTo(karte);
+                break;
+            default:
+                marker = L.marker([lat, lon]).addTo(karte);
+                break;
+        }
+        marker.bindPopup(`${type} (${numberOfficial}): ${address} (${district})`);
+    };
+
       // Punkt-Marker setzen
-      var geojsonEbene = L.geoJson(geoJsonDaten);
-	  karte.addLayer(geojsonEbene);
-	  
+      L.geoJson(geoJsonDaten, {
+        onEachFeature: featureStylingAnpassung
+      });
+
 	  var hoverZuMarkerAbstand = function(aktuelleZoomStufe) {
 		return 0.39 / Math.pow(2, aktuelleZoomStufe - 6);
 	  };
-	  var geojsonEbenenHover;
-      geojsonEbene.on('mouseover', function(ereignis) {
-        var koordinaten = ereignis.layer.feature.geometry.coordinates;
-		var hoverKoordinaten = [koordinaten[1] + hoverZuMarkerAbstand(karte.getZoom()), koordinaten[0]];
-		if (karte) {
-		  var eigenschaften = ereignis.layer.feature.properties
-		  geojsonEbenenHover = L.popup()
-		      .setLatLng(hoverKoordinaten)
-			  .setContent(eigenschaften.state)
-			  .openOn(karte);
-		}
-      });
-	  geojsonEbene.on('mouseout', function (ereignis) {
-        if (geojsonEbenenHover && karte) {
-	      karte.closePopup(geojsonEbenenHover);
-		  geojsonEbenenHover = null;
-	    }
-	  });
      </script>
   </body>
 </html>
