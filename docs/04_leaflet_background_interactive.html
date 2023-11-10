@@ -39,10 +39,16 @@
 	  //L.tileLayer.provider('Wikimedia').addTo(karte);
 	  //L.tileLayer.provider('Esri.DeLorme').addTo(karte);
 	  //L.tileLayer.provider('Esri.WorldImagery').addTo(karte);
-    //L.tileLayer.provider('CartoDB.Voyager').addTo(karte);
+	  //L.tileLayer.provider('CartoDB.Voyage	  L.tileLayer.provider('CartoDB.Voyager').addTo(karte);
 	  //L.tileLayer.provider('CartoDB.DarkMatter').addTo(karte);
 	  //L.tileLayer.provider('Stamen.Toner').addTo(karte);
 	  //L.tileLayer.provider('Hydda.RoadsAndLabels').addTo(karte);
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png', {
+      attribution: 'Map tiles by &copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/about/" target="_blank">OpenStreetMap contributors</a>',
+      minZoom: 0,
+      maxZoom: 20,
+      ext: 'png'
+    }).addTo(karte);
 
 	  // http://boundingbox.klokantech.com/ um Ausmaße herauszufinden, Ausgabe in CSV Raw
 	  var ausmasse = new L.LatLngBounds(
