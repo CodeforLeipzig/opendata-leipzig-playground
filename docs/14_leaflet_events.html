@@ -19,9 +19,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />    
   <style>
     #KarteMitPunkt {
       height: 480px;
+    }
+    div.absolute {
+      position: absolute;
+      top: 880px;
+      left: 10px;
+      right: 10px;
     }
   </style>
 </head>
@@ -72,6 +80,12 @@
     </div>
     <div class="row">
       <div class='col-sm-12' id="KarteMitPunkt" />
+    </div>
+  </div>
+  <div class="absolute">
+    <h3>Quellcode</h3>
+    <div>
+      <pre data-src="14_leaflet_events.html" /></pre>
     </div>
   </div>
   <script>

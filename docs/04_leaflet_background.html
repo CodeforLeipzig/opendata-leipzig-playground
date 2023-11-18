@@ -10,8 +10,16 @@
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-providers/1.4.0/leaflet-providers.min.js"></script>
-	<style>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />    
+  <style>
 		#KarteMitPunkt { height: 480px; }
+    div.absolute {
+      position: absolute;
+      top: 580px;
+      left: 10px;
+      right: 10px;
+    }    
 	</style>
   </head>
   <body>
@@ -21,9 +29,13 @@
 		<li><a href="http://boundingbox.klokantech.com/">Bounding Box</a></li>
       </ul>
     </p>
-    <p>
-      <div id="KarteMitPunkt" />
-    </p>
+    <div class="absolute">
+      <h3>Quellcode</h3>
+      <div>
+        <pre data-src="04_leaflet_background.html" /></pre>
+      </div>
+    </div>
+    <div id="KarteMitPunkt" />
     <script>
       // Karte mit Mittelpunkt Leipzig erzeugen
       var laengenGrad = 12.3742236;
@@ -32,17 +44,17 @@
       var zoomStufe = 14;
       var karte = L.map('KarteMitPunkt').setView(kartenMittelpunktKoordinaten, zoomStufe);
       // Hintergrundkarte setzen
-	  //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	    //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       //  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       //}).addTo(karte);
       //L.tileLayer.provider('Stamen.Watercolor').addTo(karte);
-	  //L.tileLayer.provider('Wikimedia').addTo(karte);
-	  //L.tileLayer.provider('Esri.DeLorme').addTo(karte);
-	  //L.tileLayer.provider('Esri.WorldImagery').addTo(karte);
-    //L.tileLayer.provider('CartoDB.Voyager').addTo(karte);
-	  //L.tileLayer.provider('CartoDB.DarkMatter').addTo(karte);
-	  //L.tileLayer.provider('Stamen.Toner').addTo(karte);
-	  //L.tileLayer.provider('Hydda.RoadsAndLabels').addTo(karte);
+	    //L.tileLayer.provider('Wikimedia').addTo(karte);
+	    //L.tileLayer.provider('Esri.DeLorme').addTo(karte);
+	    //L.tileLayer.provider('Esri.WorldImagery').addTo(karte);
+      L.tileLayer.provider('CartoDB.Voyager').addTo(karte);
+	    //L.tileLayer.provider('CartoDB.DarkMatter').addTo(karte);
+	    //L.tileLayer.provider('Stamen.Toner').addTo(karte);
+	    //L.tileLayer.provider('Hydda.RoadsAndLabels').addTo(karte);
 
 	  // http://boundingbox.klokantech.com/ um Ausmaße herauszufinden, Ausgabe in CSV Raw
 	  var ausmasse = new L.LatLngBounds(
@@ -55,8 +67,6 @@
 		attribution: '<a href="https://de.wikipedia.org/w/index.php?title=Datei:Leipzig_1897.jpg">Wikipedia</a>'
 	  });
 	  //karte.addLayer(hintergrund);
-en = [ 51.3320818, 12.3734686781157 ];
-      var punkt = L.marker(punktKoordinaten).addTo(karte);
      </script>
   </body>
 </html>

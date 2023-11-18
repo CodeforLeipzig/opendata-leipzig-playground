@@ -10,8 +10,16 @@
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-providers/1.4.0/leaflet-providers.min.js"></script>
-	<style>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />    
+  <style>
 		#KarteMitPunkt { height: 1024px; }
+    div.absolute {
+      position: absolute;
+      top: 1150px;
+      left: 10px;
+      right: 10px;
+    }    
 	</style>
   </head>
   <body>
@@ -21,48 +29,147 @@
 		<li><a href="http://boundingbox.klokantech.com/">Bounding Box</a></li>
       </ul>
     </p>
-    <p>
-      <div id="KarteMitPunkt" />
-    </p>
+    <div class="absolute">
+      <h3>Quellcode</h3>
+      <div>
+        <pre data-src="04_leaflet_background_interactive.html" /></pre>
+      </div>
+    </div>
+    <div id="KarteMitPunkt" />
     <script>
       // Karte mit Mittelpunkt Leipzig erzeugen
       var laengenGrad = 12.3742236;
       var breitenGrad = 51.3399028;
       var kartenMittelpunktKoordinaten = [ breitenGrad, laengenGrad ];
       var zoomStufe = 14;
-      var karte = L.map('KarteMitPunkt').setView(kartenMittelpunktKoordinaten, zoomStufe);
-      // Hintergrundkarte setzen
-	  //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      //  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      //}).addTo(karte);
-      //L.tileLayer.provider('Stamen.Watercolor').addTo(karte);
-	  //L.tileLayer.provider('Wikimedia').addTo(karte);
-	  //L.tileLayer.provider('Esri.DeLorme').addTo(karte);
-	  //L.tileLayer.provider('Esri.WorldImagery').addTo(karte);
-	  //L.tileLayer.provider('CartoDB.Voyage	  L.tileLayer.provider('CartoDB.Voyager').addTo(karte);
-	  //L.tileLayer.provider('CartoDB.DarkMatter').addTo(karte);
-	  //L.tileLayer.provider('Stamen.Toner').addTo(karte);
-	  //L.tileLayer.provider('Hydda.RoadsAndLabels').addTo(karte);
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png', {
-      attribution: 'Map tiles by &copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/about/" target="_blank">OpenStreetMap contributors</a>',
-      minZoom: 0,
-      maxZoom: 20,
-      ext: 'png'
-    }).addTo(karte);
+	    // http://boundingbox.klokantech.com/ um Ausmaße herauszufinden, Ausgabe in CSV Raw
+	    var ausmasse = new L.LatLngBounds(
+	      new L.LatLng(51.286068, 12.302645),
+		    new L.LatLng(51.381757, 12.446286)
+      );
 
-	  // http://boundingbox.klokantech.com/ um Ausmaße herauszufinden, Ausgabe in CSV Raw
-	  var ausmasse = new L.LatLngBounds(
-	    new L.LatLng(51.286068, 12.302645),
-		new L.LatLng(51.381757, 12.446286));
-	  karte.fitBounds(ausmasse); 
-	  var hintergrund = new L.ImageOverlay("https://upload.wikimedia.org/wikipedia/de/6/62/Leipzig_1897.jpg", ausmasse, {
-	    opacity: 0.5,
-		interactive: false,
-		attribution: '<a href="https://de.wikipedia.org/w/index.php?title=Datei:Leipzig_1897.jpg">Wikipedia</a>'
-	  });
-	  //karte.addLayer(hintergrund);
-en = [ 51.3320818, 12.3734686781157 ];
-      var punkt = L.marker(punktKoordinaten).addTo(karte);
+      const alleStyles = {
+        'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }),
+        'Stamen.Watercolor': L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {
+          attribution: 'Map tiles by &copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/about/" target="_blank">OpenStreetMap contributors</a>',
+          minZoom: 0,
+          maxZoom: 20,
+          ext: 'jpeg'
+        }),
+        'Wikimedia': L.tileLayer.provider('Wikimedia'),
+        'Esri.DeLorme': L.tileLayer.provider('Esri.DeLorme'),
+        'Esri.WorldImagery': L.tileLayer.provider('Esri.WorldImagery'),
+        'CartoDB.Voyage': L.tileLayer.provider('CartoDB.Voyager'),
+        'CartoDB.DarkMatter': L.tileLayer.provider('CartoDB.DarkMatter'),
+        'Stamen.Toner': L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png', {
+          attribution: 'Map tiles by &copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/about/" target="_blank">OpenStreetMap contributors</a>',
+          minZoom: 0,
+          maxZoom: 20,
+          ext: 'png'
+        }),
+        'Historisch': new L.ImageOverlay("https://upload.wikimedia.org/wikipedia/de/6/62/Leipzig_1897.jpg", ausmasse, {
+	        opacity: 0.5,
+		      interactive: false,
+		      attribution: '<a href="https://de.wikipedia.org/w/index.php?title=Datei:Leipzig_1897.jpg">Wikipedia</a>'
+	      })
+      }
+
+      var karte = L.map('KarteMitPunkt').setView(kartenMittelpunktKoordinaten, zoomStufe);
+      var initialTileLayer = alleStyles[Object.keys(alleStyles)[0]];
+      var tileLayers = [initialTileLayer];
+      initialTileLayer.addTo(karte);
+      karte.fitBounds(ausmasse); 
+
+      var infoTafel = L.control();
+
+      infoTafel.onAdd = function (karte) {
+        this._div = L.DomUtil.create('div', 'info');
+        this.update();
+        return this._div;
+      };
+
+      var alterHtmlCode = '';
+		var styleAuswahlBox = function () {
+			var htmlCode = '<select id="styleAuswahl" onchange="reagiereAufStyleAuswahl()">';
+			var alleStyleNamen = Object.keys(alleStyles);
+      for (var index in alleStyleNamen) {
+				var bezeichner = alleStyleNamen[index];
+				if (bezeichner) {
+					htmlCode += '<option>' + bezeichner + '</option>';
+				}
+			}
+			htmlCode += '</select>';
+			alterHtmlCode = htmlCode;
+			return htmlCode;
+		};
+		var gewaehlterStyle = function () {
+			var auswahlBox = document.getElementById("styleAuswahl");
+			if (auswahlBox && auswahlBox.selectedIndex != -1) {
+				var option = auswahlBox.options[auswahlBox.selectedIndex];
+				if (option) {
+					return option.text;
+				} else {
+					''
+				}
+			} else {
+				''
+			}
+		};
+
+      infoTafel.update = function () {
+        var htmlCode = '<div ><h3>Style: ';
+        htmlCode += styleAuswahlBox();
+        htmlCode += '</h3>';
+        htmlCode += '</div>';
+        this._div.innerHTML = htmlCode;
+      };
+
+      infoTafel.addTo(karte);
+
+      function initialisiereTileLayer(styleName) {
+                // Hintergrundkarte setzen
+        //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          //  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          //}).addTo(karte);
+        /*L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png', {
+          attribution: 'Map tiles by &copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/about/" target="_blank">OpenStreetMap contributors</a>',
+          minZoom: 0,
+          maxZoom: 20,
+          ext: 'png'
+        }).addTo(karte);*/
+        //L.tileLayer.provider(styleName).addTo(karte);
+        var newTileLayers = [];
+        for (tileLayer of tileLayers) {
+          if (styleName != 'Historisch') {
+            karte.removeLayer(tileLayer);          
+          } else {
+            newTileLayers.push(tileLayer)
+          }
+          var newTileLayer = alleStyles[styleName];
+          newTileLayer.addTo(karte);
+          newTileLayers.push(newTileLayer)
+        }
+        tileLayers = newTileLayers;
+      }
+
+      var geojsonEbene = undefined;
+		  var gemerkterZuletztGewaehlterOrtsteil = 'alle';
+
+      var reagiereAufStyleAuswahl = function () {
+        var auswahlBox = document.getElementById("styleAuswahl");
+        if (auswahlBox && auswahlBox.selectedIndex != -1) {
+          var gewaehlterStyleIndex = auswahlBox.options[auswahlBox.selectedIndex].value;
+          var gewaehlterStyleName = auswahlBox.options[auswahlBox.selectedIndex].text;
+          gemerkterZuletztGewaehlterStyle = gewaehlterStyleName;
+          if (gemerkterZuletztGewaehlterStyle != "") {
+            auswahlAenderung = true;
+            initialisiereTileLayer(gewaehlterStyleName);
+          }
+        }
+		  };
+
      </script>
   </body>
 </html>

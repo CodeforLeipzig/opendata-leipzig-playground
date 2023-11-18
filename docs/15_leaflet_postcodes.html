@@ -2,7 +2,7 @@
 <html>
   <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Step 14: Leaflet post code areas</title>
+	<title>Step 15: Leaflet post code areas</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
        integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
        crossorigin=""/>
@@ -10,8 +10,16 @@
        integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
        crossorigin=""></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />    
 	<style>
 		#KarteMitPunkt { height: 480px; }
+		div.absolute {
+      	  position: absolute;
+          top: 580px;
+          left: 10px;
+          right: 10px;
+        }
 	</style>
   </head>
   <body>
@@ -20,9 +28,13 @@
         <li><a href="https://wiki.openstreetmap.org/wiki/Import/Catalogue/Postleitzahlen_Deutschland_2010">Postleitzahlen_Deutschland_2010</a></li>
 	 </ul>
     </p>
-    <p>
-      <div id="KarteMitPunkt" />
-    </p>
+    <div class="absolute">
+		<h3>Quellcode</h3>
+		<div>
+		  <pre data-src="15_leaflet_postcodes.html" /></pre>
+		</div>
+	  </div>
+	  <div id="KarteMitPunkt" />
     <script>
 		// Karte mit Mittelpunkt Leipzig erzeugen
 		var laengenGrad = 12.3742236;

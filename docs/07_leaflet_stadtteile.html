@@ -10,8 +10,16 @@
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<style>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />    
+    <style>
 		#KarteMitPunkt { height: 480px; }
+		div.absolute {
+			position: absolute;
+			top: 680px;
+			left: 10px;
+			right: 10px;
+		}		
 	</style>
   </head>
   <body>
@@ -31,9 +39,13 @@ area["name"="Leipzig"];
 rel(area)[boundary=administrative][admin_level=6];out geom;
 </pre>	
 	</p>  
-    <p>
-      <div id="KarteMitPunkt" />
-    </p>
+    <div class="absolute">
+		<h3>Quellcode</h3>
+		<div>
+		  <pre data-src="07_leaflet_stadtteile.html" /></pre>
+		</div>
+	  </div>
+	  <div id="KarteMitPunkt" />
     <script>
       // Karte mit Mittelpunkt Leipzig erzeugen
       var laengenGrad = 12.3742236;
