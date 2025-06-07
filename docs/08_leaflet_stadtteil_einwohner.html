@@ -82,12 +82,12 @@
 					if (karte) {
 						var eigenschaften = ereignis.layer.feature.properties
 							var ortsteilName = eigenschaften.Name
-							var einwohnerAnzahl2023 = Array.from(einwohner.daten).find(function (datenSatz) {
+							var einwohnerAnzahl2024 = Array.from(einwohner.daten).find(function (datenSatz) {
 								return datenSatz.ortsteil == ortsteilName
 								 && datenSatz.name == 'Einwohner insgesamt'
-								 && datenSatz.jahr == 2023;
+								 && datenSatz.jahr == 2024;
 							}).wert;
-						var inhalt = "<h3>" + ortsteilName + "</h3>Einwohner 2023: " + einwohnerAnzahl2023;
+						var inhalt = "<h3>" + ortsteilName + "</h3>Einwohner 2024: " + einwohnerAnzahl2024;
 						geojsonEbenenHover = L.popup()
 							.setLatLng(hoverKoordinaten)
 							.setContent(inhalt)
